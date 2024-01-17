@@ -189,7 +189,9 @@ const FileSystemNavigator = ({ data }) => {
       {!!previewData.length && (
         <Box sx={{ marginTop: "40px" }}>
           {previewData.map((row, i) => (
-            <Box key={i} sx={{ marginBottom: "5px" }}>{row.join(", ")}</Box>
+            <Box key={i} sx={{ marginBottom: "5px" }}>
+              {row.join(", ")}
+            </Box>
           ))}
         </Box>
       )}

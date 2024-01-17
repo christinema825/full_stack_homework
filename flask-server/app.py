@@ -141,6 +141,7 @@ def file_tree():
                                 })
     return jsonify(data)
 
+
 @app.route('/preview', methods=['GET'])
 def preview():
     filename = request.args.get('filename')
@@ -180,6 +181,7 @@ def download():
         except Exception as e:
             print(e)
             return 'File not found in the zip archive.', 404
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

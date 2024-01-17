@@ -6,10 +6,9 @@ function App() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/file_tree")
-      .then((response) => {
-        setData(response.data);
-      })
+    axios.get("http://localhost:5000/file_tree").then((response) => {
+      setData(response.data);
+    });
   }, []);
   return <FileSystemNavigator data={data} />;
 }
