@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, send_file, request
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from db_connector import get_db, init_app
 from zipfile import ZipFile
 import io
