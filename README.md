@@ -35,8 +35,8 @@ Our users are our Machina teammates who are doing the R&D for customers. We stor
 - [Install](https://docs.docker.com/desktop/) and run Docker
 
 ### Running the Application
-You can start the application as follows. The first time it runs, it will run `init.sql` to create tables and populate them with some seed data.  
+To start the application, open the terminal, navigate to the root of the full_stack_homework project, and run the following command:
 ```
-docker compose up
+docker compose up --build
 ```
 
