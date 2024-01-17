@@ -1,0 +1,6 @@
+Flask==2.0.0
+Flask-CORS==3.0.10 
+Jinja2==3.0.1
+MarkupSafe==2.0.1
+Werkzeug==2.0.1
+mysql-connector-python==8.0.28
