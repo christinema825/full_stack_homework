@@ -1,14 +1,17 @@
-import React from 'react';
-// import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FileSystemNavigator from './fileSystemNavigator.js';
-import Button from '@mui/material/Button';
-// const theme = createTheme();
+import React, { useState, useEffect } from "react";
+import FileSystemNavigator from "./fileSystemNavigator.js";
+import axios from "axios";
 
 function App() {
-  // return <Button variant="contained">Hello world</Button>;
-  return <FileSystemNavigator/>
-  // return <p>hi</p>
-}
+  const [data, setData] = useState([]);
 
+  useEffect(() => {
+    axios.get("/file_tree")
+      .then((response) => {
+        setData(response.data);
+      });
+  }, []);
+  return <FileSystemNavigator data={data} />;
+}
 
 export default App;

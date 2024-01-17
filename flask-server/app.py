@@ -1,66 +1,14 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_file, request
+from flask_cors import CORS, cross_origin
 from db_connector import get_db, init_app
-
-# # from models import Customer
-
-# app = Flask(__name__)
-# app.config.from_mapping(
-#     DB_HOST='localhost',
-#     DB_USER='root',
-#     DB_PASSWORD='mysecretpassword',
-#     DB_DATABASE='machina_labs'
-# )
-# init_app(app)
-
-# #Define a route
-# @app.route('/file_tree', methods=['GET'])
-# def file_tree():
-#     query = """
-#             SELECT 
-#             *
-#             FROM 
-#                 customer 
-#             LEFT JOIN 
-#                 part ON customer.uuid = part.customer_uuid
-#             LEFT JOIN
-#                 part_revision ON part_revision.part_uuid = part.uuid
-#             LEFT JOIN
-#                 trial ON trial.part_revision_uuid = part_revision.uuid
-#             LEFT JOIN
-#                 process_run ON process_run.trial_uuid = trial.uuid
-#             LEFT JOIN 
-#                 process_run_file_artifact ON process_run_file_artifact.process_run_uuid = process_run.uuid  
-#             LEFT JOIN
-#                 file ON process_run_file_artifact.file_artifact_uuid = file.uuid     
-#             """            
-
-#     db = get_db()
-#     cursor = db.cursor()
-#     cursor.execute(query)
-#     results = cursor.fetchall()
-#     cursor.close()
-#     # for result in results:
-#         # print(result)
-#     data = [results]
-#     print(data)
-#     data_list = [dict(zip(range(1, len(row)+1), row)) for row in data]
-    
-#     # Send JSON as part of the response
-#     return jsonify(data_list)
-#     # return "hello world"
-
-# if __name__ == "__main__":
-#     print("hello___________")
-#     app.run(debug=True)
+from zipfile import ZipFile
+import io
+import os
+import logging
+import csv
 
 
-#                 # customer.name, customer.uuid, part.name, file.uuid, file.type, file.location,
-#                 # part_revision.uuid, part_revision.name, part_revision.geometry_file_uuid,
-#                 # trial.uuid, trial.success,
-#                 # process_run.uuid, process_run.type,
-#                 # process_run_file_artifact.uuid, process_run_file_artifact.file_artifact_uuid 
-
-
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config.from_mapping(
@@ -69,13 +17,17 @@ app.config.from_mapping(
     DB_PASSWORD='mysecretpassword',
     DB_DATABASE='machina_labs'
 )
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
 init_app(app)
+CORS(app)
 
-#Define a route
+
+# Define a route
 @app.route('/file_tree', methods=['GET'])
 def file_tree():
 
-# Create a cursor
+    # Create a cursor
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
@@ -106,9 +58,7 @@ def file_tree():
 
     # Organize data into a nested dictionary representing a file tree
     data = {}
-
     for customer in customers:
-        print(customer)
         customer_uuid = customer['uuid']
         data[customer_uuid] = {
             'name': customer['name'],
@@ -121,7 +71,6 @@ def file_tree():
         for part in parts:
             if part['customer_uuid'] == customer_uuid:
                 customer_parts.append(part)
-
 
         for part in customer_parts:
             part_uuid = part['uuid']
@@ -139,14 +88,17 @@ def file_tree():
 
             for rev in part_revs:
                 rev_uuid = rev['uuid']
+                cad_files = [x for x in files if x['uuid']
+                             == rev['geometry_file_uuid']]
                 data[customer_uuid]['parts'][part_uuid]['revisions'][rev_uuid] = {
                     'name': rev['name'],
-                    'trials': []
+                    'trials': [],
+                    'geometry_files': cad_files
                 }
 
                 # Fetch trials for each part revision
                 rev_trials = []
-                for trial in trials: 
+                for trial in trials:
                     if trial['part_revision_uuid'] == rev_uuid:
                         rev_trials.append(trial)
 
@@ -172,7 +124,7 @@ def file_tree():
 
                         # Fetch file artifacts for each process run
                         pr_file_artifacts = []
-                        for fa in file_artifacts: 
+                        for fa in file_artifacts:
                             if fa['process_run_uuid'] == pr_uuid:
                                 pr_file_artifacts.append(fa)
 
@@ -186,15 +138,57 @@ def file_tree():
 
                             if file_data:
                                 data[customer_uuid]['parts'][part_uuid]['revisions'][rev_uuid]['trials'][-1]['process_runs'][-1]['file_artifacts'].append({
-                                    'type': file_data['type'],  
+                                    'type': file_data['type'],
                                     'location': file_data['location']
                                 })
 
     # Convert data to JSON
-    print(jsonify(data))
+    # print(jsonify(data))
+    # print(data)
     return jsonify(data)
+
+
+@app.route('/preview', methods=['GET'])
+def preview():
+    filename = request.args.get('filename')
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    zip_file_path = os.path.join(current_directory, 'files.zip')
+
+    with ZipFile(zip_file_path, 'r') as zip_file:
+        csv_rows = []
+        try:
+            with zip_file.open('files/' + filename, 'r') as infile:
+                reader = csv.reader(io.TextIOWrapper(infile, 'utf-8'))
+                for row in list(reader)[:50]:
+                    csv_rows.append(row)
+
+            return jsonify(csv_rows)
+        except Exception as e:
+            print(e)
+            return 'File not found in the zip archive.', 404
+
+
+@app.route('/download', methods=['GET'])
+def download():
+    filename = request.args.get('filename')
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    zip_file_path = os.path.join(current_directory, 'files.zip')
+
+    with ZipFile(zip_file_path, 'r') as zip_file:
+        try:
+            file_data = zip_file.read("files/" + filename)
+
+            return send_file(
+                io.BytesIO(file_data),
+                mimetype='application/octet-stream',
+                as_attachment=True,
+                download_name=filename
+            )
+        except Exception as e:
+            print(e)
+            return 'File not found in the zip archive.', 404
+
 
 if __name__ == "__main__":
     print("hello___________")
     app.run(debug=True)
-    
