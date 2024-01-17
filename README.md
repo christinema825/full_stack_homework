@@ -35,8 +35,10 @@ Our users are our Machina teammates who are doing the R&D for customers. We stor
 - [Install](https://docs.docker.com/desktop/) and run Docker
 
 ### Running the Application
-To start the application, open the terminal, navigate to the root of the full_stack_homework project, and run the following command:
+- To start the application, open the terminal, navigate to the root of the full_stack_homework project, and run the following command:
 ```
 docker compose up --build
 ```
+
+- In the browser, navigate to `http://localhost:3000/`
 
