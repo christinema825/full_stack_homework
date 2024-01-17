@@ -53,7 +53,6 @@ def file_tree():
     cursor.execute("SELECT * FROM process_run_file_artifact")
     file_artifacts = cursor.fetchall()
 
-    # Close the cursor and connection
     cursor.close()
 
     # Organize data into a nested dictionary representing a file tree
@@ -141,12 +140,7 @@ def file_tree():
                                     'type': file_data['type'],
                                     'location': file_data['location']
                                 })
-
-    # Convert data to JSON
-    # print(jsonify(data))
-    # print(data)
     return jsonify(data)
-
 
 @app.route('/preview', methods=['GET'])
 def preview():
@@ -187,7 +181,6 @@ def download():
         except Exception as e:
             print(e)
             return 'File not found in the zip archive.', 404
-
 
 if __name__ == "__main__":
     print("hello___________")
