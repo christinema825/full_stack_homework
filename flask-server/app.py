@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config.from_mapping(
-    DB_HOST='localhost',
+    DB_HOST='db_service',
     DB_USER='root',
     DB_PASSWORD='mysecretpassword',
     DB_DATABASE='machina_labs'
@@ -26,7 +26,6 @@ CORS(app)
 # Define a route
 @app.route('/file_tree', methods=['GET'])
 def file_tree():
-
     # Create a cursor
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -183,5 +182,4 @@ def download():
             return 'File not found in the zip archive.', 404
 
 if __name__ == "__main__":
-    print("hello___________")
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

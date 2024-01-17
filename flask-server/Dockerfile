@@ -6,9 +6,9 @@ COPY . /app
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
-ENV PORT=5000
+ENV FLASK_APP=app.py
 
 EXPOSE 5000 
 
-CMD ["python", "flask-server/app.py"]
+CMD ["flask", "run", "-h", "0.0.0.0", "-p", "5000"]
 

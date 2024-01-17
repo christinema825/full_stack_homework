@@ -1,6 +1,6 @@
 version: '3'
 services:
-  db:
+  db_service:
     image: mysql:5.7
     ports:
       - "3306:3306"
@@ -8,3 +8,17 @@ services:
       - MYSQL_ROOT_PASSWORD=mysecretpassword
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend_service:
+    build: ./flask-server
+    links:
+      - db_service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db_service
+
+  frontend_service:
+    build: ./client
+    ports:
+      - "3000:3000"
