@@ -40,5 +40,5 @@ Our users are our Machina teammates who are doing the R&D for customers. We stor
 docker compose up --build
 ```
 
-- In the browser, navigate to `http://localhost:3000/`
+- To view the application, open your browser and navigate to `http://localhost:3000/`
 
